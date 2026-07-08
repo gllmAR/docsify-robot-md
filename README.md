@@ -1,56 +1,32 @@
-# docsify-robot-md
+# docsify-robot-md — page de test
 
-A tiny, dependency-free [Docsify](https://docsify.js.org/) plugin that makes
-the **raw Markdown source** of every page available to crawlers, robots,
-and no-JS consumers — no server, no build step, no edge function required.
+C'est une **mini-instance Docsify 5** servant uniquement à vérifier le
+plugin [`docsify-robot-md`](../docsify-robot-md.js).
 
-## Why
+## Comment vérifier le plugin
 
-Docsify is a single-page app: `index.html` only contains `<div id="app">`
-and all content is rendered client-side in JavaScript. Search-engine bots
-that don't run JS, link-preview bots (Twitter/Slack/LinkedIn), archives,
-and readers with JS disabled see an empty page.
+1. Ouvrez cette page publiée (GitHub Pages).
+2. Ouvrez les outils de développement (onglet *Éléments* / *Elements*).
+3. Dans `<head>`, cherchez la balise :
 
-This plugin fixes the *content-discovery* gap by exposing, on every route
-change, a `<link rel="alternate" type="text/markdown">` pointing at the
-page's `.md` source — which static hosts (Codeberg Pages, GitHub Pages,
-Netlify, …) already serve directly.
+   ```html
+   <link rel="alternate" type="text/markdown" href=".../README.md">
+   ```
 
-It does **not** magically give per-URL social-preview cards (those are read
-from the single `index.html` shell, which a static host can't vary per
-route). For that you'd need SSR/edge rendering. This plugin covers the
-realistic, static-friendly part: indexable Markdown for robots and no-JS.
+   Elle pointe vers le Markdown source de la page courante.
+4. Naviguez vers une autre page (ex. *Exemple*) : l'URL de la balise
+   `alternate` se met à jour automatiquement.
+5. `window.__pageMarkdownUrl__` contient aussi cette URL en JS.
 
-## What it does
+## Ce que fait le plugin
 
-On each `doneEach` (Docsify route change) the plugin:
+- Injecte `<link rel="alternate" type="text/markdown">` par page.
+- Expose `window.__pageMarkdownUrl__`.
+- Ajoute un JSON-LD `WebPage` décrivant la source.
 
-1. Injects `<link rel="alternate" type="text/markdown" href="<page>.md">`
-   so crawlers can fetch the indexable source directly.
-2. Sets `window.__pageMarkdownUrl__` to that URL (fetch it on demand to get
-   the raw text).
-3. Adds a JSON-LD `WebPage` describing the article source URL.
+## Limite
 
-## Install
-
-Add the script after Docsify (and after your `$docsify` config):
-
-```html
-<script src="https://gllmAR.github.io/docsify-robot-md/docsify-robot-md.js"></script>
-```
-
-That's it — no configuration needed. The plugin registers itself onto
-`window.$docsify.plugins` automatically.
-
-> Served from this repo's GitHub Pages. A jsDelivr mirror is also available:
-> `https://cdn.jsdelivr.net/gh/gllmAR/docsify-robot-md/docsify-robot-md.js`
-
-### Via docsh
-
-If your site is built with [`docsh`](https://codeberg.org/gllm/docsh),
-SEO is on by default (`docsh init`). Running `docsh vendor` will download
-this plugin into `vendor/` and rewrite `index.html` to use the local copy.
-
-## License
-
-MIT — see [LICENSE](./LICENSE).
+Sur un hébergement statique, l'aperçu social par page n'est pas résolu
+(les balises OG sont dans la coquille `index.html` unique). Le plugin
+couvre l'indexation du Markdown par les robots et l'accès sans JS au
+`.md` source.
