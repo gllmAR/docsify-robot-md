@@ -36,11 +36,14 @@ On each `doneEach` (Docsify route change) the plugin:
 Add the script after Docsify (and after your `$docsify` config):
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/gllmAR/docsify-robot-md/docsify-robot-md.js"></script>
+<script src="https://gllmAR.github.io/docsify-robot-md/docsify-robot-md.js"></script>
 ```
 
 That's it — no configuration needed. The plugin registers itself onto
 `window.$docsify.plugins` automatically.
+
+> Served from this repo's GitHub Pages. A jsDelivr mirror is also available:
+> `https://cdn.jsdelivr.net/gh/gllmAR/docsify-robot-md/docsify-robot-md.js`
 
 ### Via docsh
 
