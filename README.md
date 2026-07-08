@@ -20,9 +20,21 @@ plugin [`docsify-robot-md`](../docsify-robot-md.js).
 
 ## Ce que fait le plugin
 
-- Injecte `<link rel="alternate" type="text/markdown">` par page.
-- Expose `window.__pageMarkdownUrl__`.
-- Ajoute un JSON-LD `WebPage` décrivant la source.
+- Injecte `<link rel="alternate" type="text/markdown">` par page (pointe
+  vers le `.md` source indexable).
+- Expose `window.__pageMarkdownUrl__` (URL du `.md`).
+- Expose `window.__pageMarkdown__` : un **Promise** paresseux qui renvoie
+  le texte Markdown brut au premier accès (`await window.__pageMarkdown__`).
+- Ajoute un JSON-LD `WebPage`/`Article` (avec `headline`) décrivant la source.
+
+## Installer le plugin (ailleurs)
+
+```html
+<script src="https://gllmar.github.io/docsify-robot-md/docsify-robot-md.js"></script>
+```
+
+À placer après `docsify.min.js`. Aucune configuration requise — le plugin
+s'enregistre seul sur `window.$docsify.plugins`.
 
 ## Limite
 

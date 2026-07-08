@@ -5,18 +5,34 @@
 // change (hook.doneEach) it:
 //   1. adds  <link rel="alternate" type="text/markdown" href="<page>.md">
 //      so crawlers/robots can fetch the indexable source directly;
-//   2. sets  window.__pageMarkdownUrl__ to that URL (raw text is available
-//      on demand via fetch(window.__pageMarkdownUrl__));
-//   3. injects a JSON-LD WebPage describing the article source URL.
+//   2. sets  window.__pageMarkdownUrl__ to that URL;
+//   3. exposes window.__pageMarkdown__ as a lazy Promise resolving to the
+//      raw text (fetched on first access — never wastes a request);
+//   4. injects a JSON-LD WebPage describing the article source URL.
 //
 // Install (Docsify 5):
-//   <script src="https://cdn.jsdelivr.net/gh/gllmAR/docsify-robot-md/docsify-robot-md.js"></script>
+//   <script src="https://gllmar.github.io/docsify-robot-md/docsify-robot-md.js"></script>
 //
 // Or vendor it locally (e.g. with `docsh vendor`) and point to your copy.
 (function () {
   "use strict";
 
   function install(hook, vm) {
+    // Define the lazy Markdown getter once (returns a Promise, fetched on
+    // first access) so tools/crawlers that run JS can read the source
+    // without manually calling fetch().
+    if (!Object.getOwnPropertyDescriptor(window, "__pageMarkdown__")) {
+      Object.defineProperty(window, "__pageMarkdown__", {
+        configurable: true,
+        get: function () {
+          if (!window.__pageMarkdownUrl__) return Promise.resolve(null);
+          return fetch(window.__pageMarkdownUrl__).then(function (r) {
+            return r.text();
+          });
+        }
+      });
+    }
+
     function currentMarkdownUrl() {
       var file = vm.route && vm.route.file; // e.g. "01-deroulement/README.md"
       if (!file) return null;
@@ -53,7 +69,8 @@
         "@type": "WebPage",
         "mainEntity": {
           "@type": "Article",
-          "url": mdUrl
+          "url": mdUrl,
+          "headline": (document.title || "").replace(/\s*[|\-–—]\s*.*$/, "")
         }
       };
       var script = document.createElement("script");
@@ -66,7 +83,6 @@
     hook.doneEach(function () {
       var mdUrl = currentMarkdownUrl();
       window.__pageMarkdownUrl__ = mdUrl || null;
-      window.__pageMarkdown__ = null; // populated on demand by crawlers
       upsertAlternateMarkdown(mdUrl);
       upsertJsonLd(mdUrl);
     });
